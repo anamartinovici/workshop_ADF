@@ -10,24 +10,9 @@ names(raw_dataset)
 
 raw_obj <- map(raw_dataset, httr::content)
 
-obj <- raw_obj[["iter_1"]]
-length(obj)
-names(obj)
-table(sapply(obj[["data"]], length))
-which(sapply(obj[["data"]], length) == 3)
-obj[["data"]][[15]]
-which(sapply(obj[["data"]], length) == 4)
-obj[["data"]][[1]]
-which(sapply(obj[["data"]], length) == 5)
-obj[["data"]][[2]]
-
-setdiff(names(obj[["data"]][[1]]), names(obj[["data"]][[15]]))
-
-table(sapply(obj[["includes"]], length))
-names(obj[["includes"]])
-table(sapply(obj[["includes"]][["tweets"]], length))
-which(sapply(obj[["includes"]][["tweets"]], length) == 3)
-obj[["includes"]][["tweets"]][[9]]
+raw_obj_data <- map(raw_obj, "data")
+map(raw_obj_data, length)
+raw_obj_data <- purrr::flatten(raw_obj_data)
 
 # from obj_data, I need: author_id, id, type_of_tweet, info about the referenced tweet
 f_get_tweet_type <- function(input_list) {
@@ -49,7 +34,7 @@ f_get_ref_tweet_id <- function(input_list) {
 }
 
 # rearrange the data
-df_data <- obj[["data"]] %>% 
+df_data <- raw_obj_data %>% 
 	{tibble(tweet_id         = map_chr(., "id"),
 			text             = map_chr(., "text"),
 			author_id        = map_chr(., "author_id"),
@@ -57,8 +42,15 @@ df_data <- obj[["data"]] %>%
 			ref_tweet_id     = map_chr(., f_get_ref_tweet_id))}
 
 
+raw_obj_includes <- map(raw_obj, "includes")
+map(raw_obj_includes, length)
+raw_obj_includes <- purrr::flatten(raw_obj_includes)
+map(raw_obj_includes, length)
+raw_obj_includes <- purrr::flatten(raw_obj_includes)
+
+
 # If I only need the text and the id, then that I can get like this:
-df_includes <- obj[["includes"]][["tweets"]] %>% 
+df_includes <- raw_obj_includes %>% 
 	{tibble(ref_tweet_id     = map_chr(., "id"),
 			ref_author_id    = map_chr(., "author_id"),
 			ref_tweet_text   = map_chr(., "text"))}

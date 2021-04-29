@@ -97,7 +97,7 @@ names(raw_dataset)[req_number] <- paste0("iter_", req_number)
 # as long as there are more tweets to collect, meta.next_token has a value
 # otherwise, if meta.next_token is null, this means you've collected all
 # tweets from this user
-while(req_number < 3 && !is.null(obj[["meta"]][["next_token"]])) {
+while(!is.null(obj[["meta"]][["next_token"]])) {
 	# this is where I left
 	params[["pagination_token"]] <- obj[["meta"]][["next_token"]]
 	response <-	httr::GET(url = url_handle,
