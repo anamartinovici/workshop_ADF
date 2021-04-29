@@ -87,5 +87,9 @@ httr::status_code(response)
 
 obj <- httr::content(response)
 
-
-
+# create the raw_dataset and add the response obj in it
+raw_dataset <- NULL
+req_number <- 1
+raw_dataset[[req_number]] <- response
+names(raw_dataset)[req_number] <- paste0("iter_", req_number)
+save(raw_dataset, file = "raw_dataset.RData")
