@@ -92,4 +92,25 @@ raw_dataset <- NULL
 req_number <- 1
 raw_dataset[[req_number]] <- response
 names(raw_dataset)[req_number] <- paste0("iter_", req_number)
+
+# as long as there are more tweets to collect, meta.next_token has a value
+# otherwise, if meta.next_token is null, this means you've collected all
+# tweets from this user
+while(!is.null(obj[["meta"]][["next_token"]])) {
+	# this is where I left
+	next_token <- distinct(df_obj %>% select(meta.next_token))
+	
+	params <- list(max_results = n_tweets_per_request,
+				   pagination_token = next_token$meta.next_token)
+	response <-	httr::GET(url = url_handle,
+						  config = httr::add_headers(.headers = my_header[["headers"]]),
+						  query = params)
+	httr::status_code(response)
+	obj <- httr::content(response)
+	
+	ALL_tweets <- rbind(ALL_tweets, df_obj %>% select(data.id, data.text))
+}
+
+
+
 save(raw_dataset, file = "raw_dataset.RData")
