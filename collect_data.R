@@ -1,3 +1,5 @@
+rm(list=ls())
+
 library("httr")
 library("jsonlite")
 library("tidyverse")
@@ -49,3 +51,25 @@ remove(headers)
 #
 ################################################
 ################################################
+
+################################################
+# Step 4: get account id
+################################################
+
+# collect the user_id for this handle
+handle <- 'Ana_Martinovici'
+url_handle <- paste0('https://api.twitter.com/2/users/by?usernames=', handle)
+response <-	httr::GET(url = url_handle,
+					  config = httr::add_headers(.headers = my_header[["header"]]))
+# always check the HTTP response before doing anything else
+httr::status_code(response)
+# if 200 (Success), then continue.
+# else, fix the issues first
+
+# convert the output to text and then to a data frame
+obj <- httr::content(response, as = "text")
+df_obj <- jsonlite::fromJSON(obj, flatten = TRUE) %>% as.data.frame
+print(df_obj)
+# data.id is the user_id I need
+user_id <- df_obj[["data.id"]]
+
