@@ -3,6 +3,7 @@ rm(list=ls())
 library("httr")
 library("jsonlite")
 library("tidyverse")
+library("tictoc")
 # add any other packages you might need to use
 
 ################################################
@@ -96,21 +97,22 @@ names(raw_dataset)[req_number] <- paste0("iter_", req_number)
 # as long as there are more tweets to collect, meta.next_token has a value
 # otherwise, if meta.next_token is null, this means you've collected all
 # tweets from this user
-while(!is.null(obj[["meta"]][["next_token"]])) {
+while(req_number < 3 && !is.null(obj[["meta"]][["next_token"]])) {
 	# this is where I left
-	next_token <- distinct(df_obj %>% select(meta.next_token))
-	
-	params <- list(max_results = n_tweets_per_request,
-				   pagination_token = next_token$meta.next_token)
+	params[["pagination_token"]] <- obj[["meta"]][["next_token"]]
 	response <-	httr::GET(url = url_handle,
-						  config = httr::add_headers(.headers = my_header[["headers"]]),
+						  config = httr::add_headers(.headers = my_header[["header"]]),
 						  query = params)
-	httr::status_code(response)
+	cat(paste0("HTTP status is: ", httr::status_code(response), "\n"))
 	obj <- httr::content(response)
-	
-	ALL_tweets <- rbind(ALL_tweets, df_obj %>% select(data.id, data.text))
+	req_number <- req_number + 1
+	raw_dataset[[req_number]] <- response
+	names(raw_dataset)[req_number] <- paste0("iter_", req_number)
 }
 
-
+# you need to use Sys.sleep if you run into rate limits
+#tic("paused for: ")
+#Sys.sleep("5")
+#toc()
 
 save(raw_dataset, file = "raw_dataset.RData")
