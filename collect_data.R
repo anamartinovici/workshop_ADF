@@ -73,3 +73,19 @@ print(df_obj)
 # data.id is the user_id I need
 user_id <- df_obj[["data.id"]]
 
+
+url_handle <- paste0('https://api.twitter.com/2/users/', user_id, "/tweets")
+# by default, the number of tweets retrieved per request is 10
+# you can ask for more tweets (check the documentation for exact info)
+params <- list(max_results = '20',
+			   tweet.fields = "author_id,in_reply_to_user_id",
+			   expansions = "referenced_tweets.id")
+response <-	httr::GET(url = url_handle,
+					  config = httr::add_headers(.headers = my_header[["header"]]),
+					  query = params)
+httr::status_code(response)
+
+obj <- httr::content(response)
+
+
+
